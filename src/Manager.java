@@ -5,12 +5,12 @@ import java.util.HashMap;
 public class Manager {
     protected int ID = 1;
     protected HashMap<Integer, Task> tasks;
-    protected HashMap<Integer, SubTask> subTasks;
+    protected HashMap<Integer, Subtask> subtasks;
     protected HashMap<Integer, Epic> epics;
 
     Manager() {
         tasks = new HashMap<>();
-        subTasks = new HashMap<>();
+        subtasks = new HashMap<>();
         epics = new HashMap<>();
     }
 
@@ -33,14 +33,14 @@ public class Manager {
         ID++;
     }
 
-    void createNewSubTask(SubTask subTask) {
-        if (subTask == null) {
+    void createNewSubTask(Subtask subtask) {
+        if (subtask == null) {
             return;
         }
-        subTask.setID(ID);
-        if (epics.containsKey(subTask.getEpicID())) {
-            subTasks.put(ID, subTask);
-            epics.get(subTask.getEpicID()).addNewSubTask(subTask);
+        subtask.setID(ID);
+        if (epics.containsKey(subtask.getEpicID())) {
+            subtasks.put(ID, subtask);
+            epics.get(subtask.getEpicID()).addNewSubTask(subtask);
             ID++;
         }
         else System.out.println("Такого эпика нет");
@@ -53,8 +53,8 @@ public class Manager {
     ArrayList<Epic> getAllEpics() {
         return new ArrayList<>(epics.values());
     }
-    ArrayList<SubTask> getAllSubTasks() {
-        return new ArrayList<>(subTasks.values());
+    ArrayList<Subtask> getAllSubTasks() {
+        return new ArrayList<>(subtasks.values());
     }
 
     //removing all tasks by type
@@ -68,20 +68,24 @@ public class Manager {
 
     void removeAllSubtasks(){
         for (Epic epic : epics.values()) {
-            epic.subtasks = new ArrayList<>();
+            epic.removeSubtasks();
         }
-        subTasks = new HashMap<>();
+        subtasks = new HashMap<>();
     }
 
     void removeAllSubtasksOfEpic(int epicID){
         if (epics.containsKey(epicID)) {
-            ArrayList<SubTask> subtasksToDelete = epics.get(epicID).subtasks;
-            for (SubTask subTask : subtasksToDelete) {
-                if (subTasks.containsValue(subTask)) {
-                    subTasks.remove(subTask.getID());
+            ArrayList<Subtask> subtasksToDelete = epics.get(epicID).getSubtasks();
+            for (Subtask subtask : subtasksToDelete) {
+                    if (subtasks.containsValue(subtask)) {
+                    subtasks.remove(subtask.getID());
                 }
             }
-            epics.get(epicID).subtasks = new ArrayList<>();
+            epics.get(epicID).removeSubtasks();
         }
+    }
+
+    void updateTask(Task task) {
+
     }
 }

@@ -3,18 +3,26 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Epic extends Task {
-    ArrayList<SubTask> subtasks;
+    private ArrayList<Subtask> subtasks;
 
     public Epic(int ID, String title, String description) {
         super(ID, title, description);
         this.subtasks = new ArrayList<>();
     }
 
-    public void addNewSubTask(SubTask subTask) {
+    public void addNewSubTask(Subtask subtask) {
         if (status == Status.DONE) {
             status = Status.NEW;
         }
-        subtasks.add(subTask);
+        subtasks.add(subtask);
+    }
+
+    public ArrayList<Subtask> getSubtasks() {
+        return subtasks;
+    }
+
+    public void removeSubtasks(){
+        this.subtasks = new ArrayList<>();
     }
 
     @Override

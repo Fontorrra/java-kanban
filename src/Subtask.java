@@ -1,9 +1,9 @@
 import java.util.Objects;
 
-public class SubTask extends Task {
-    int epicID;
+public class Subtask extends Task {
+    private int epicID;
 
-    public SubTask(int ID, String title, String description, int epicID) {
+    public Subtask(int ID, String title, String description, int epicID) {
         super(ID, title, description);
         this.epicID = epicID;
     }
@@ -21,8 +21,8 @@ public class SubTask extends Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
-        SubTask subTask = (SubTask) o;
-        return this.epicID == subTask.epicID;
+        Subtask subtask = (Subtask) o;
+        return this.epicID == subtask.epicID;
     }
 
     @Override

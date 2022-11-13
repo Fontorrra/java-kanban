@@ -8,14 +8,14 @@ public class Main {
         manager.createNewEpic(new Epic(0, "first epic", "description of first epic"));
         manager.createNewEpic(new Epic(0, "second epic", "description of second epic"));
         ArrayList<Epic> epics = manager.getAllEpics();
-        manager.createNewSubTask(new SubTask(0, "first sub task",
+        manager.createNewSubTask(new Subtask(0, "first sub task",
                         "sub task of first epic", epics.get(0).getID()));
-        manager.createNewSubTask(new SubTask(0, "second sub task",
+        manager.createNewSubTask(new Subtask(0, "second sub task",
                         "another sub task of first epic", epics.get(0).getID()));
-        manager.createNewSubTask(new SubTask(0, "third sub task",
+        manager.createNewSubTask(new Subtask(0, "third sub task",
                         "sub task of second epic", epics.get(1).getID()));
         ArrayList<Task> tasks = manager.getAllTasks();
-        ArrayList<SubTask> subTasks = manager.getAllSubTasks();
+        ArrayList<Subtask> subtasks = manager.getAllSubTasks();
         //manager.printAllTasks();
         //manager.printAllEpics();
     }
