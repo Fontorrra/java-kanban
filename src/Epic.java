@@ -33,9 +33,12 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        String result = super.toString();
-        result = result.replace("Task", "Epic");
-        result += "subtasks size=" + subtasks.size();
-        return result;
+        return "Epic{" +
+                "ID=" + ID +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                "subtasks size='" + subtasks.size() + '\'' +
+                '}';
     }
 }
