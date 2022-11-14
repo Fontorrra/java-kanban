@@ -42,41 +42,43 @@ public class Manager {
             subtasks.put(ID, subtask);
             epics.get(subtask.getEpicID()).addNewSubTask(subtask);
             ID++;
-        }
-        else System.out.println("Такого эпика нет");
+        } else System.out.println("Такого эпика нет");
     }
 
     //getting a list of tasks by type
     ArrayList<Task> getAllTasks() {
         return new ArrayList<>(tasks.values());
     }
+
     ArrayList<Epic> getAllEpics() {
         return new ArrayList<>(epics.values());
     }
+
     ArrayList<Subtask> getAllSubTasks() {
         return new ArrayList<>(subtasks.values());
     }
 
     //removing all tasks by type
-    void removeAllTasks(){
+    void removeAllTasks() {
         tasks = new HashMap<>();
     }
-    void removeAllEpics(){
+
+    void removeAllEpics() {
         epics = new HashMap<>();
     }
 
-    void removeAllSubtasks(){
+    void removeAllSubtasks() {
         for (Epic epic : epics.values()) {
             epic.removeAllSubtasks();
         }
         subtasks = new HashMap<>();
     }
 
-    void removeAllSubtasksOfEpic(int epicID){
+    void removeAllSubtasksOfEpic(int epicID) {
         if (epics.containsKey(epicID)) {
             ArrayList<Subtask> subtasksToDelete = epics.get(epicID).getSubtasks();
             for (Subtask subtask : subtasksToDelete) {
-                    if (subtasks.containsValue(subtask)) {
+                if (subtasks.containsValue(subtask)) {
                     subtasks.remove(subtask.getID());
                 }
             }
@@ -107,17 +109,22 @@ public class Manager {
     }
 
     //remove task(any type of task) by ID
-    //возможно стоит реализовать 3 функции вместо одной общей
-    void removeTaskOfAnyType(int ID) {
+    void removeTask(int ID) {
         if (tasks.containsKey(ID)) {
             Task task = tasks.get(ID);
             tasks.remove(task.getID());
         }
-        else if (epics.containsKey(ID)) {
+    }
+
+    void removeEpic(int ID) {
+        if (epics.containsKey(ID)) {
             removeAllSubtasksOfEpic(ID);
             epics.remove(ID);
         }
-        else if (subtasks.containsKey(ID)) {
+    }
+
+    void removeSubtask(int ID) {
+        if (subtasks.containsKey(ID)) {
             Subtask subtask = subtasks.get(ID);
             subtasks.remove(ID);
             Epic epicToUpdate = epics.get(subtask.getEpicID());
@@ -125,6 +132,8 @@ public class Manager {
             epics.put(epicToUpdate.getID(), epicToUpdate);
         }
     }
+
+    //получение задачи по ID
 
     ArrayList<Integer> getAllTasksID() {
         return new ArrayList<Integer>(tasks.keySet());
