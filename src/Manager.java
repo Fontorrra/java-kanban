@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class Manager {
@@ -134,6 +133,29 @@ public class Manager {
     }
 
     //получение задачи по ID
+
+    Task getTask(int ID) {
+        if (tasks.containsKey(ID)) {
+            return tasks.get(ID);
+        }
+        return null;
+    }
+
+    Epic getEpic(int ID) {
+        if (epics.containsKey(ID)) {
+            return epics.get(ID);
+        }
+        return null;
+    }
+
+    Subtask getSubtask(int ID) {
+        if (subtasks.containsKey(ID)) {
+            return subtasks.get(ID);
+        }
+        return null;
+    }
+
+    // получение всех  ID
 
     ArrayList<Integer> getAllTasksID() {
         return new ArrayList<Integer>(tasks.keySet());
