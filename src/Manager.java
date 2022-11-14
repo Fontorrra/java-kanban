@@ -85,14 +85,14 @@ public class Manager {
         }
     }
 
-    //update task of any type;
+    //update of task
     void updateTask(Task task) {
         if (tasks.containsKey(task.getID())) {
             tasks.put(task.getID(), task);
         }
     }
 
-    void updateEpic(Epic epic) {
+    void updateEpic(Epic epic) { //нельзя таким образом менять подзадачи эпика, для этого есть дргуие методы
         if (epics.containsKey(epic.getID())) {
             epics.put(epic.getID(), epic);
         }
@@ -132,8 +132,7 @@ public class Manager {
         }
     }
 
-    //получение задачи по ID
-
+    //get task by ID
     Task getTask(int ID) {
         if (tasks.containsKey(ID)) {
             return tasks.get(ID);
@@ -155,8 +154,7 @@ public class Manager {
         return null;
     }
 
-    // получение всех  ID
-
+    // getters of ID
     ArrayList<Integer> getAllTasksID() {
         return new ArrayList<Integer>(tasks.keySet());
     }
@@ -165,6 +163,15 @@ public class Manager {
     }
     ArrayList<Integer> getAllSubtasksID() {
         return new ArrayList<Integer>(subtasks.keySet());
+    }
+
+    //get all subtasks of Epic
+    ArrayList<Subtask> getAllSubtasksOfEpic(int epicID) {
+        if (epics.containsKey(epicID)) {
+            Epic epic = epics.get(epicID);
+            return new ArrayList<>(epic.getSubtasks());
+        }
+        return null;
     }
 
 }

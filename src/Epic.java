@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class Epic extends Task {
@@ -11,16 +10,16 @@ public class Epic extends Task {
     }
 
     public void addNewSubTask(Subtask subtask) {
-        if (status == Status.DONE) {
-            status = Status.NEW;
+        if (status != Status.NEW) {
+            status = Status.IN_PROGRESS;
         }
         subtasks.add(subtask);
     }
 
     public void updateSubtaskInEpic(Subtask subtask) {
         int i = 0;
-        for (Subtask subtaskInArray : subtasks) {
-            if (subtaskInArray.getID() == subtask.getID()) {
+        for (Subtask subtaskInEpic : subtasks) {
+            if (subtaskInEpic.getID() == subtask.getID()) {
                 subtasks.remove(i);
                 subtasks.add(i, subtask);
                 updateStatus();
@@ -46,15 +45,18 @@ public class Epic extends Task {
 
     public void updateStatus() {
         int numberOfNew = 0;
+        int numberOfDone = 0;
         for (Subtask subtask : subtasks) {
             if (subtask.getStatus().equals(Status.IN_PROGRESS)) {
                 this.status = Status.IN_PROGRESS;
                 return;
             }
             else if (subtask.status.equals(Status.NEW)) numberOfNew++;
+            else numberOfDone++;
         }
         if (numberOfNew == subtasks.size()) this.status = Status.NEW;
-        else this.status = Status.DONE;
+        else if (numberOfDone == subtasks.size()) this.status = Status.DONE;
+        else this.status = Status.IN_PROGRESS;
     }
 
     @Override
