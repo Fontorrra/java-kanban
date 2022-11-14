@@ -3,10 +3,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class Manager {
-    protected int ID = 1;
-    protected HashMap<Integer, Task> tasks;
-    protected HashMap<Integer, Subtask> subtasks;
-    protected HashMap<Integer, Epic> epics;
+    private int ID = 1;
+    private HashMap<Integer, Task> tasks;
+    private HashMap<Integer, Subtask> subtasks;
+    private HashMap<Integer, Epic> epics;
 
     Manager() {
         tasks = new HashMap<>();
@@ -33,7 +33,7 @@ public class Manager {
         ID++;
     }
 
-    void createNewSubTask(Subtask subtask) {
+    void createNewSubtask(Subtask subtask) {
         if (subtask == null) {
             return;
         }
@@ -58,7 +58,6 @@ public class Manager {
     }
 
     //removing all tasks by type
-
     void removeAllTasks(){
         tasks = new HashMap<>();
     }
@@ -68,7 +67,7 @@ public class Manager {
 
     void removeAllSubtasks(){
         for (Epic epic : epics.values()) {
-            epic.removeSubtasks();
+            epic.removeAllSubtasks();
         }
         subtasks = new HashMap<>();
     }
@@ -81,11 +80,60 @@ public class Manager {
                     subtasks.remove(subtask.getID());
                 }
             }
-            epics.get(epicID).removeSubtasks();
+            epics.get(epicID).removeAllSubtasks();
         }
     }
 
+    //update task of any type;
     void updateTask(Task task) {
-
+        if (tasks.containsKey(task.getID())) {
+            tasks.put(task.getID(), task);
+        }
     }
+
+    void updateEpic(Epic epic) {
+        if (epics.containsKey(epic.getID())) {
+            epics.put(epic.getID(), epic);
+        }
+    }
+
+    void updateSubtask(Subtask subtask) {
+        if (subtasks.containsKey(subtask.getID())) {
+            subtasks.put(subtask.getID(), subtask);
+            Epic epicToUpdate = epics.get(subtask.getEpicID());
+            epicToUpdate.updateSubtaskInEpic(subtask);
+            epics.put(epicToUpdate.getID(), epicToUpdate);
+        }
+    }
+
+    //remove task(any type of task) by ID
+    //возможно стоит реализовать 3 функции вместо одной общей
+    void removeTaskOfAnyType(int ID) {
+        if (tasks.containsKey(ID)) {
+            Task task = tasks.get(ID);
+            tasks.remove(task.getID());
+        }
+        else if (epics.containsKey(ID)) {
+            removeAllSubtasksOfEpic(ID);
+            epics.remove(ID);
+        }
+        else if (subtasks.containsKey(ID)) {
+            Subtask subtask = subtasks.get(ID);
+            subtasks.remove(ID);
+            Epic epicToUpdate = epics.get(subtask.getEpicID());
+            epicToUpdate.removeSubtaskInEpic(subtask);
+            epics.put(epicToUpdate.getID(), epicToUpdate);
+        }
+    }
+
+    ArrayList<Integer> getAllTasksID() {
+        return new ArrayList<Integer>(tasks.keySet());
+    }
+    ArrayList<Integer> getAllEpicsID() {
+        return new ArrayList<Integer>(epics.keySet());
+    }
+    ArrayList<Integer> getAllSubtasksID() {
+        return new ArrayList<Integer>(subtasks.keySet());
+    }
+
 }
