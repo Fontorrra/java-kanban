@@ -1,54 +1,53 @@
 package task;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class Epic extends Task {
-    private ArrayList<Subtask> subtasks;
+    private HashMap<Integer, Subtask> subtasks;
 
     public Epic(int ID, String title, String description) {
         super(ID, title, description);
-        this.subtasks = new ArrayList<>();
+        this.subtasks = new HashMap<>();
     }
 
     public void addNewSubTask(Subtask subtask) {
         if (status != Status.NEW) {
             status = Status.IN_PROGRESS;
         }
-        subtasks.add(subtask);
+        subtasks.put(subtask.getID(), subtask);
     }
 
     public void updateSubtaskInEpic(Subtask subtask) {
-        int i = 0;
-        for (Subtask subtaskInEpic : subtasks) {
+        for (Subtask subtaskInEpic : subtasks.values()) {
             if (subtaskInEpic.getID() == subtask.getID()) {
-                subtasks.remove(i);
-                subtasks.add(i, subtask);
+                subtasks.remove(subtaskInEpic.getID());
+                subtasks.put(subtask.getID(), subtask);
                 updateStatus();
                 return;
             }
-            i++;
         }
     }
 
     public void removeSubtaskInEpic(Subtask subtask) {
-        subtasks.remove(subtask);
+        subtasks.remove(subtask.getID(), subtask);
         updateStatus();
     }
 
     public ArrayList<Subtask> getSubtasks() {
-        return subtasks;
+        return new ArrayList<>(subtasks.values());
     }
 
     public void removeAllSubtasks(){
-        this.subtasks = new ArrayList<>();
+        this.subtasks = new HashMap<>();
         status = Status.NEW;
     }
 
     public void updateStatus() {
         int numberOfNew = 0;
         int numberOfDone = 0;
-        for (Subtask subtask : subtasks) {
+        for (Subtask subtask : subtasks.values()) {
             if (subtask.getStatus().equals(Status.IN_PROGRESS)) {
                 this.status = Status.IN_PROGRESS;
                 return;
@@ -78,7 +77,7 @@ public class Epic extends Task {
     @Override
     public String toString() {
         ArrayList<Integer> subtasksID = new ArrayList<>();
-        for (Subtask subtask : subtasks) {
+        for (Subtask subtask : subtasks.values()) {
             subtasksID.add(subtask.getID());
         }
         return "task.Epic{" +

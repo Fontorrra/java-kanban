@@ -41,11 +41,11 @@ public class Manager {
             return;
         }
         subtask.setID(ID);
-        if (epics.containsKey(subtask.getEpicID())) {
-            subtasks.put(ID, subtask);
-            epics.get(subtask.getEpicID()).addNewSubTask(subtask);
-            ID++;
-        } else System.out.println("Такого эпика нет");
+        Epic epicToUpdate = epics.getOrDefault(subtask.getEpicID(), null);
+        if (epicToUpdate == null) return;
+        subtasks.put(ID, subtask);
+        epicToUpdate.addNewSubTask(subtask);
+        ID++;
     }
 
     //getting a list of tasks by type
@@ -78,15 +78,14 @@ public class Manager {
     }
 
     void removeAllSubtasksOfEpic(int epicID) {
-        if (epics.containsKey(epicID)) {
-            ArrayList<Subtask> subtasksToDelete = epics.get(epicID).getSubtasks();
-            for (Subtask subtask : subtasksToDelete) {
-                if (subtasks.containsValue(subtask)) {
-                    subtasks.remove(subtask.getID());
-                }
-            }
-            epics.get(epicID).removeAllSubtasks();
+        Epic epicToUpdate = epics.getOrDefault(epicID, null);
+
+        if (epicToUpdate == null) return;
+        ArrayList<Subtask> subtasksToDelete = epicToUpdate.getSubtasks();
+        for (Subtask subtask : subtasksToDelete) {
+            subtasks.remove(subtask.getID());
         }
+        epicToUpdate.removeAllSubtasks();
     }
 
     //update of task
@@ -104,8 +103,9 @@ public class Manager {
 
     void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getID())) {
+            Epic epicToUpdate = epics.getOrDefault(subtask.getEpicID(), null);
+            if (epicToUpdate == null) return;
             subtasks.put(subtask.getID(), subtask);
-            Epic epicToUpdate = epics.get(subtask.getEpicID());
             epicToUpdate.updateSubtaskInEpic(subtask);
             epics.put(epicToUpdate.getID(), epicToUpdate);
         }
@@ -138,44 +138,33 @@ public class Manager {
 
     //get task by ID
     Task getTask(int ID) {
-        if (tasks.containsKey(ID)) {
-            return tasks.get(ID);
-        }
-        return null;
+        return tasks.getOrDefault(ID, null);
     }
 
     Epic getEpic(int ID) {
-        if (epics.containsKey(ID)) {
-            return epics.get(ID);
-        }
-        return null;
+        return epics.getOrDefault(ID, null);
     }
 
     Subtask getSubtask(int ID) {
-        if (subtasks.containsKey(ID)) {
-            return subtasks.get(ID);
-        }
-        return null;
+        return subtasks.getOrDefault(ID, null);
     }
 
     // getters of ID
     ArrayList<Integer> getAllTasksID() {
-        return new ArrayList<Integer>(tasks.keySet());
+        return new ArrayList<>(tasks.keySet());
     }
     ArrayList<Integer> getAllEpicsID() {
-        return new ArrayList<Integer>(epics.keySet());
+        return new ArrayList<>(epics.keySet());
     }
     ArrayList<Integer> getAllSubtasksID() {
-        return new ArrayList<Integer>(subtasks.keySet());
+        return new ArrayList<>(subtasks.keySet());
     }
 
     //get all subtasks of task.Epic
     ArrayList<Subtask> getAllSubtasksOfEpic(int epicID) {
-        if (epics.containsKey(epicID)) {
-            Epic epic = epics.get(epicID);
-            return new ArrayList<>(epic.getSubtasks());
-        }
-        return null;
+        Epic epic = epics.getOrDefault(epicID, null);
+        if (epic == null) return null;
+        return new ArrayList<>(epic.getSubtasks());
     }
 
 }
