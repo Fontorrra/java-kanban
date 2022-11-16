@@ -1,3 +1,7 @@
+import task.Epic;
+import task.Subtask;
+import task.Task;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -165,7 +169,7 @@ public class Manager {
         return new ArrayList<Integer>(subtasks.keySet());
     }
 
-    //get all subtasks of Epic
+    //get all subtasks of task.Epic
     ArrayList<Subtask> getAllSubtasksOfEpic(int epicID) {
         if (epics.containsKey(epicID)) {
             Epic epic = epics.get(epicID);

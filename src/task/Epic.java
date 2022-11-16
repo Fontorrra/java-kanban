@@ -1,3 +1,5 @@
+package task;
+
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -79,7 +81,7 @@ public class Epic extends Task {
         for (Subtask subtask : subtasks) {
             subtasksID.add(subtask.getID());
         }
-        return "Epic{" +
+        return "task.Epic{" +
                 "ID=" + ID +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
