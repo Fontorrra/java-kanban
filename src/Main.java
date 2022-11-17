@@ -1,3 +1,4 @@
+import manager.Manager;
 import task.Epic;
 import task.Status;
 import task.Subtask;
@@ -13,14 +14,12 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Изачально массив заполнен двумя задачами," +
                 " и двумя эпиками(в две подзадачи в другом одна)");
-        Task task = new Task(1, "first task", "description of first task");
         Manager manager = new Manager();
         manager.createNewTask(new Task(0, "first task", "description of first task"));
         manager.createNewTask(new Task(0, "second task", "description of second task"));
         manager.createNewEpic(new Epic(0, "first epic", "description of first epic"));
         manager.createNewEpic(new Epic(0, "second epic", "description of second epic"));
         ArrayList<Epic> epics = manager.getAllEpics();
-        ArrayList<Task> tasks = manager.getAllTasks();
         manager.createNewSubtask(new Subtask(0, "first sub task",
                         "sub task of first epic", epics.get(0).getID()));
         manager.createNewSubtask(new Subtask(0, "second sub task",
