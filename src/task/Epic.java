@@ -80,7 +80,7 @@ public class Epic extends Task {
         for (Subtask subtask : subtasks.values()) {
             subtasksID.add(subtask.getID());
         }
-        return "task.Epic{" +
+        return "Epic{" +
                 "ID=" + ID +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
