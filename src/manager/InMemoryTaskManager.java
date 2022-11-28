@@ -21,36 +21,39 @@ public class InMemoryTaskManager implements TaskManager{
 
     //creating tasks
     @Override
-    public void createNewTask(Task task) {
+    public int createNewTask(Task task) {
         if (task == null) {
-            return;
+            return -1;
         }
         task.setID(ID);
         tasks.put(ID, task);
         ID++;
+        return ID - 1;
     }
 
     @Override
-    public void createNewEpic(Epic epic) {
+    public int createNewEpic(Epic epic) {
         if (epic == null) {
-            return;
+            return - 1;
         }
         epic.setID(ID);
         epics.put(ID, epic);
         ID++;
+        return ID - 1;
     }
 
     @Override
-    public void createNewSubtask(Subtask subtask) {
+    public int createNewSubtask(Subtask subtask) {
         if (subtask == null) {
-            return;
+            return -1;
         }
         subtask.setID(ID);
         Epic epicToUpdate = epics.getOrDefault(subtask.getEpicID(), null);
-        if (epicToUpdate == null) return;
+        if (epicToUpdate == null) return -1;
         subtasks.put(ID, subtask);
         epicToUpdate.addNewSubTask(subtask);
         ID++;
+        return ID - 1;
     }
 
     //getting a list of tasks by type

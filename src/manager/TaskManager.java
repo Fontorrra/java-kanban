@@ -5,11 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 public interface TaskManager {
     //creating tasks
-    void createNewTask(Task task);
+    int createNewTask(Task task);
 
-    void createNewEpic(Epic epic);
+    int createNewEpic(Epic epic);
 
-    void createNewSubtask(Subtask subtask);
+    int createNewSubtask(Subtask subtask);
 
     //getting a list of tasks by type
     ArrayList<Task> getAllTasks();
