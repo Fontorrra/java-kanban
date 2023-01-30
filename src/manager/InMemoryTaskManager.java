@@ -75,18 +75,26 @@ public class InMemoryTaskManager implements TaskManager{
     //removing all tasks by type
     @Override
     public void removeAllTasks() {
+        for (Integer id : tasks.keySet()) {
+            historyManager.remove(id);
+        }
         tasks = new HashMap<>();
     }
 
     @Override
     public void removeAllEpics() {
+        for (Integer id : epics.keySet()) {
+            removeAllSubtasksOfEpic(id);
+            historyManager.remove(id);
+        }
+
         epics = new HashMap<>();
     }
 
     @Override
     public void removeAllSubtasks() {
-        for (Epic epic : epics.values()) {
-            epic.removeAllSubtasks();
+        for (Integer id : epics.keySet()) {
+            removeAllSubtasksOfEpic(id);
         }
         subtasks = new HashMap<>();
     }
@@ -99,7 +107,7 @@ public class InMemoryTaskManager implements TaskManager{
         for (Subtask subtask : subtasksToDelete) {
             subtasks.remove(subtask.getID());
         }
-        epicToUpdate.removeAllSubtasks();
+        epicToUpdate.removeAllSubtasks(historyManager);
     }
 
     //update of task
@@ -130,9 +138,10 @@ public class InMemoryTaskManager implements TaskManager{
 
     //remove task(any type of task) by ID
     @Override
-    public void removeTask(int ID) {
-        if (tasks.containsKey(ID)) {
-            Task task = tasks.get(ID);
+    public void removeTask(int id) {
+        if (tasks.containsKey(id)) {
+            historyManager.remove(id);
+            Task task = tasks.get(id);
             tasks.remove(task.getID());
         }
     }
@@ -140,6 +149,7 @@ public class InMemoryTaskManager implements TaskManager{
     @Override
     public void removeEpic(int ID) {
         if (epics.containsKey(ID)) {
+            historyManager.remove(ID);
             removeAllSubtasksOfEpic(ID);
             epics.remove(ID);
         }
@@ -148,6 +158,7 @@ public class InMemoryTaskManager implements TaskManager{
     @Override
     public void removeSubtask(int ID) {
         if (subtasks.containsKey(ID)) {
+            historyManager.remove(ID);
             Subtask subtask = subtasks.get(ID);
             subtasks.remove(ID);
             Epic epicToUpdate = epics.get(subtask.getEpicID());

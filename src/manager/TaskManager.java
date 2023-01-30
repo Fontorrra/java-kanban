@@ -3,6 +3,7 @@ package manager;
 import task.*;
 import java.util.ArrayList;
 import java.util.List;
+
 public interface TaskManager {
     //creating tasks
     int createNewTask(Task task);

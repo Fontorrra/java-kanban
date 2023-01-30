@@ -1,5 +1,7 @@
 package task;
 
+import manager.HistoryManager;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -39,7 +41,10 @@ public class Epic extends Task {
         return new ArrayList<>(subtasks.values());
     }
 
-    public void removeAllSubtasks(){
+    public void removeAllSubtasks(HistoryManager historyManager){
+        for (Integer id : subtasks.keySet()) {
+            historyManager.remove(id);
+        }
         this.subtasks = new HashMap<>();
         status = Status.NEW;
     }
