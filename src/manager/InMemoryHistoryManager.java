@@ -80,6 +80,7 @@ public class InMemoryHistoryManager implements HistoryManager {
                 return;
             }
             tail = node.getPrev();
+            tail.setNext(null);
         }
 
         else {

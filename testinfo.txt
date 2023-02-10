@@ -1,0 +1,13 @@
+id,type,name,status,description,epic
+1,TASK,first task,NEW,description of first task,None
+2,TASK,second task,NEW,description of second task,None
+8,TASK,zxc,NEW,qwe,None
+3,EPIC,first epic,NEW,description of first epic,None
+4,EPIC,second epic,NEW,description of second epic,None
+9,EPIC,qqqqqqq,NEW,rrrrrr,None
+5,SUBTASK,first subtask,NEW,subtask of first epic,3
+6,SUBTASK,second subtask,NEW,another subtask of first epic,3
+7,SUBTASK,third subtask,NEW,subtask of second epic,4
+10,SUBTASK,kekw,NEW,kekl,9
+
+3,5,1,10

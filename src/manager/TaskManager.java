@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface TaskManager {
     //creating tasks
-    int createNewTask(Task task);
+    void createNewTask(Task task);
 
-    int createNewEpic(Epic epic);
+    void createNewEpic(Epic epic);
 
-    int createNewSubtask(Subtask subtask);
+    void createNewSubtask(Subtask subtask);
 
     //getting a list of tasks by type
     ArrayList<Task> getAllTasks();

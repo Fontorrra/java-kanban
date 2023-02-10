@@ -15,6 +15,14 @@ public class Task {
         this.status = Status.NEW;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
     public int getID() {
         return ID;
     }

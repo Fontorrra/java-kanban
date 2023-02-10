@@ -1,7 +1,12 @@
+import manager.FileBackedTasksManager;
 import manager.InMemoryTaskManager;
 import manager.Managers;
 import task.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -13,18 +18,31 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Изачально массив заполнен двумя задачами," +
                 " и двумя эпиками(в две подзадачи в другом одна)");
-        InMemoryTaskManager inMemoryTaskManager = (InMemoryTaskManager) Managers.getDefault();
-        inMemoryTaskManager.createNewTask(new Task(0, "first task", "description of first task"));
-        inMemoryTaskManager.createNewTask(new Task(0, "second task", "description of second task"));
-        inMemoryTaskManager.createNewEpic(new Epic(0, "first epic", "description of first epic"));
-        inMemoryTaskManager.createNewEpic(new Epic(0, "second epic", "description of second epic"));
-        ArrayList<Epic> epics = inMemoryTaskManager.getAllEpics();
-        inMemoryTaskManager.createNewSubtask(new Subtask(0, "first sub task",
-                        "sub task of first epic", epics.get(0).getID()));
-        inMemoryTaskManager.createNewSubtask(new Subtask(0, "second sub task",
-                        "another sub task of first epic", epics.get(0).getID()));
-        inMemoryTaskManager.createNewSubtask(new Subtask(0, "third sub task",
-                        "sub task of second epic", epics.get(1).getID()));
+        File file = new File("info.txt");
+        FileBackedTasksManager fileBackedTasksManager = (FileBackedTasksManager)
+                Managers.getDefaultFile(file);
+        fileBackedTasksManager.createNewTask(new Task(0, "first task", "description of first task"));
+        fileBackedTasksManager.createNewTask(new Task(0, "second task", "description of second task"));
+        fileBackedTasksManager.createNewEpic(new Epic(0, "first epic", "description of first epic"));
+        fileBackedTasksManager.createNewEpic(new Epic(0, "second epic", "description of second epic"));
+        ArrayList<Epic> epics = fileBackedTasksManager.getAllEpics();
+        fileBackedTasksManager.createNewSubtask(new Subtask(0, "first subtask",
+                        "subtask of first epic", epics.get(0).getID()));
+        fileBackedTasksManager.createNewSubtask(new Subtask(0, "second subtask",
+                        "another subtask of first epic", epics.get(0).getID()));
+        fileBackedTasksManager.createNewSubtask(new Subtask(0, "third subtask",
+                        "subtask of second epic", epics.get(1).getID()));
+       /* System.out.println(fileBackedTasksManager.toString
+                (new Task(0, "first task", "description of first task")));
+        System.out.println(fileBackedTasksManager.toString
+                (new Epic(0, "second epic", "description of second epic")));
+        System.out.println(fileBackedTasksManager.toString
+                (new Subtask(0, "first sub task",
+                        "sub task of first epic", epics.get(0).getID())));
+        System.out.println(fileBackedTasksManager.fromString(fileBackedTasksManager.toString
+                (new Subtask(0, "first sub task",
+                        "sub task of first epic", epics.get(0).getID()))))*/
+
         printMenu();
         while (true) {
             int choice = scanner.nextInt();
@@ -32,37 +50,39 @@ public class Main {
                 case 0:
                     return;
                 case 1:
-                    add(inMemoryTaskManager);
+                    add(fileBackedTasksManager);
                     printMenu();
                     break;
                 case 2:
-                    show(inMemoryTaskManager);
+                    show(fileBackedTasksManager);
                     printMenu();
                     break;
                 case 3:
-                    removeAll(inMemoryTaskManager);
+                    removeAll(fileBackedTasksManager);
                     printMenu();
                     break;
                 case 4:
-                    get(inMemoryTaskManager);
+                    get(fileBackedTasksManager);
                     printMenu();
                     break;
                 case 5:
-                    removeOneTask(inMemoryTaskManager);
+                    removeOneTask(fileBackedTasksManager);
                     printMenu();
                     break;
                 case 6:
-                    update(inMemoryTaskManager);
+                    update(fileBackedTasksManager);
                     printMenu();
                     break;
                 case 7:
-                    getSubtasksOfEpic(inMemoryTaskManager);
+                    getSubtasksOfEpic(fileBackedTasksManager);
                     printMenu();
                     break;
                 case 8:
-                    getHistory(inMemoryTaskManager);
+                    getHistory(fileBackedTasksManager);
                     printMenu();
                     break;
+                case 9:
+                    fileBackedTasksManager = getManagerFromFile(file);
                 default:
                     System.out.println("Такого выбора нет");
                     printMenu();
@@ -80,9 +100,10 @@ public class Main {
         System.out.println("6. Обновить задачу/эпик/подзадачу по ID");
         System.out.println("7. Вывести все подзадачи эпика");
         System.out.println("8. Вывести историю просмотров");
+        System.out.println("9. Восстановить по файлу");
     }
 
-    static void add(InMemoryTaskManager inMemoryTaskManager){
+    static void add(FileBackedTasksManager fileBackedTasksManager){
         System.out.println("Что добавить");
         System.out.println("1. Задачу");
         System.out.println("2. Эпик");
@@ -98,7 +119,7 @@ public class Main {
                 String title = scanner.nextLine();
                 System.out.println("Введите описание");
                 String description = scanner.nextLine();
-                inMemoryTaskManager.createNewTask(new Task(0, title, description));
+                fileBackedTasksManager.createNewTask(new Task(0, title, description));
                 return;
             case 2:
                 scanner.nextLine();
@@ -106,7 +127,7 @@ public class Main {
                 title = scanner.nextLine();
                 System.out.println("Введите описание");
                 description = scanner.nextLine();
-                inMemoryTaskManager.createNewEpic(new Epic(0, title, description));
+                fileBackedTasksManager.createNewEpic(new Epic(0, title, description));
                 return;
             case 3:
                 scanner.nextLine();
@@ -114,19 +135,19 @@ public class Main {
                 title = scanner.nextLine();
                 System.out.println("Введите описание");
                 description = scanner.nextLine();
-                System.out.println("Введите ID эпика. Все ID эпиков: " + inMemoryTaskManager.getAllEpicsID());
+                System.out.println("Введите ID эпика. Все ID эпиков: " + fileBackedTasksManager.getAllEpicsID());
                 int epicID = scanner.nextInt();
-                inMemoryTaskManager.createNewSubtask(new Subtask(0, title, description, epicID));
+                fileBackedTasksManager.createNewSubtask(new Subtask(0, title, description, epicID));
                 return;
             case 0:
                 return;
             default:
                 System.out.println("Такого выбора нет");
-                add(inMemoryTaskManager);
+                add(fileBackedTasksManager);
         }
     }
 
-    static void show(InMemoryTaskManager inMemoryTaskManager) {
+    static void show(FileBackedTasksManager fileBackedTasksManager) {
         System.out.println("Что получить");
         System.out.println("1. Задачи");
         System.out.println("2. Эпики");
@@ -134,23 +155,23 @@ public class Main {
         int choice = scanner.nextInt();
         switch (choice) {
             case 1:
-                for (Task task : inMemoryTaskManager.getAllTasks()) System.out.println(task);
+                for (Task task : fileBackedTasksManager.getAllTasks()) System.out.println(task);
                 return;
             case 2:
-                for (Epic epic : inMemoryTaskManager.getAllEpics())System.out.println(epic);
+                for (Epic epic : fileBackedTasksManager.getAllEpics())System.out.println(epic);
                 return;
             case 3:
-                for (Subtask subtask : inMemoryTaskManager.getAllSubTasks()) System.out.println(subtask);
+                for (Subtask subtask : fileBackedTasksManager.getAllSubTasks()) System.out.println(subtask);
                 return;
             case 0:
                 return;
             default:
                 System.out.println("Такого выбора нет");
-                show(inMemoryTaskManager);
+                show(fileBackedTasksManager);
         }
     }
 
-    static void removeAll(InMemoryTaskManager inMemoryTaskManager) {
+    static void removeAll(FileBackedTasksManager fileBackedTasksManager) {
         System.out.println("Что удалить");
         System.out.println("1. Все задачи");
         System.out.println("2. Все эпики");
@@ -160,23 +181,23 @@ public class Main {
 
         switch (choice) {
             case 1:
-                inMemoryTaskManager.removeAllTasks();
+                fileBackedTasksManager.removeAllTasks();
                 return;
             case 2:
-                inMemoryTaskManager.removeAllEpics();
+                fileBackedTasksManager.removeAllEpics();
                 return;
             case 3:
-                inMemoryTaskManager.removeAllSubtasks();
+                fileBackedTasksManager.removeAllSubtasks();
                 return;
             case 0:
                 return;
             default:
                 System.out.println("Такого выбора нет");
-                removeAll(inMemoryTaskManager);
+                removeAll(fileBackedTasksManager);
         }
     }
 
-    static void get(InMemoryTaskManager inMemoryTaskManager) {
+    static void get(FileBackedTasksManager fileBackedTasksManager) {
         System.out.println("Что получить");
         System.out.println("1. Задачу");
         System.out.println("2. Эпик");
@@ -186,29 +207,29 @@ public class Main {
 
         switch (choice) {
             case 1:
-                System.out.println("Введите ID задачи. Все ID задач: " + inMemoryTaskManager.getAllTasksID());
+                System.out.println("Введите ID задачи. Все ID задач: " + fileBackedTasksManager.getAllTasksID());
                 int ID = scanner.nextInt();
-                System.out.println(inMemoryTaskManager.getTask(ID));
+                System.out.println(fileBackedTasksManager.getTask(ID));
                 break;
             case 2:
-                System.out.println("Введите ID эпика. Все ID эпиков: " + inMemoryTaskManager.getAllEpicsID());
+                System.out.println("Введите ID эпика. Все ID эпиков: " + fileBackedTasksManager.getAllEpicsID());
                 ID = scanner.nextInt();
-                System.out.println(inMemoryTaskManager.getEpic(ID));
+                System.out.println(fileBackedTasksManager.getEpic(ID));
                 break;
             case 3:
-                System.out.println("Введите ID подзадачи. Все ID подзадач: " + inMemoryTaskManager.getAllSubtasksID());
+                System.out.println("Введите ID подзадачи. Все ID подзадач: " + fileBackedTasksManager.getAllSubtasksID());
                 ID = scanner.nextInt();
-                System.out.println(inMemoryTaskManager.getSubtask(ID));
+                System.out.println(fileBackedTasksManager.getSubtask(ID));
                 break;
             case 0:
                 return;
             default:
                 System.out.println("Такого выбора нет");
-                get(inMemoryTaskManager);
+                get(fileBackedTasksManager);
         }
     }
 
-    static void removeOneTask(InMemoryTaskManager inMemoryTaskManager) {
+    static void removeOneTask(FileBackedTasksManager fileBackedTasksManager) {
         System.out.println("Что удалить");
         System.out.println("1. Задачу");
         System.out.println("2. Эпик");
@@ -218,29 +239,29 @@ public class Main {
 
         switch (choice) {
             case 1:
-                System.out.println("Введите ID задачи. Все ID задач: " + inMemoryTaskManager.getAllTasksID());
+                System.out.println("Введите ID задачи. Все ID задач: " + fileBackedTasksManager.getAllTasksID());
                 int ID = scanner.nextInt();
-                inMemoryTaskManager.removeTask(ID);
+                fileBackedTasksManager.removeTask(ID);
                 break;
             case 2:
-                System.out.println("Введите ID эпика. Все ID эпиков: " + inMemoryTaskManager.getAllEpicsID());
+                System.out.println("Введите ID эпика. Все ID эпиков: " + fileBackedTasksManager.getAllEpicsID());
                 ID = scanner.nextInt();
-                inMemoryTaskManager.removeEpic(ID);
+                fileBackedTasksManager.removeEpic(ID);
                 break;
             case 3:
-                System.out.println("Введите ID подзадачи. Все ID подзадач: " + inMemoryTaskManager.getAllSubtasksID());
+                System.out.println("Введите ID подзадачи. Все ID подзадач: " + fileBackedTasksManager.getAllSubtasksID());
                 ID = scanner.nextInt();
-                inMemoryTaskManager.removeSubtask(ID);
+                fileBackedTasksManager.removeSubtask(ID);
                 break;
             case 0:
                 return;
             default:
                 System.out.println("Такого выбора нет");
-                removeOneTask(inMemoryTaskManager);
+                removeOneTask(fileBackedTasksManager);
         }
     }
 
-    static void update(InMemoryTaskManager inMemoryTaskManager) {
+    static void update(FileBackedTasksManager fileBackedTasksManager) {
         System.out.println("Что обновить");
         System.out.println("1. Задачу");
         System.out.println("2. Эпик");
@@ -250,58 +271,82 @@ public class Main {
 
         switch (choice) {
             case 1:
-                System.out.println("Введите ID задачи. Все ID задач: " + inMemoryTaskManager.getAllTasksID());
+                System.out.println("Введите ID задачи. Все ID задач: " + fileBackedTasksManager.getAllTasksID());
                 int ID = scanner.nextInt();
-                Task task = inMemoryTaskManager.getTask(ID);
-                if (task == null) return;
+                List<Task> tasks = fileBackedTasksManager.getAllTasks();
+                if (tasks == null) return;
+                Task thisTask = null;
+                for (Task task : tasks) {
+                    if (task.getID() == ID) {
+                        thisTask = task;
+                    }
+                }
                 System.out.println("Введите новый статус: \n1. IN_PROGRESS\n2. DONE");
                 int ident = scanner.nextInt();
-                if (ident == 1) task.setStatus(Status.IN_PROGRESS);
-                if (ident == 2) task.setStatus(Status.DONE);
-                inMemoryTaskManager.updateTask(task);
+                if (ident == 1) thisTask.setStatus(Status.IN_PROGRESS);
+                if (ident == 2) thisTask.setStatus(Status.DONE);
+                fileBackedTasksManager.updateTask(thisTask);
                 break;
             case 2:
-                System.out.println("Введите ID эпика. Все ID эпиков: " + inMemoryTaskManager.getAllEpicsID());
+                System.out.println("Введите ID эпика. Все ID эпиков: " + fileBackedTasksManager.getAllEpicsID());
                 ID = scanner.nextInt();
-                Epic epic = inMemoryTaskManager.getEpic(ID);
-                if (epic == null) return;
+                List<Epic> epics = fileBackedTasksManager.getAllEpics();
+                if (epics == null) return;
+                Epic thisEpic = null;
+                for (Epic epic : epics) {
+                    if (epic.getID() == ID) {
+                        thisEpic = epic;
+                    }
+                }
+                if (thisEpic == null) return;
                 //можно менять title или description
                 //но делать для этого отдельное меню долго и бесполезно, оно работает
-                inMemoryTaskManager.updateEpic(epic);
+                fileBackedTasksManager.updateEpic(thisEpic);
                 break;
             case 3:
-                System.out.println("Введите ID подзадачи. Все ID подзадач: " + inMemoryTaskManager.getAllSubtasksID());
+                System.out.println("Введите ID подзадачи. Все ID подзадач: " + fileBackedTasksManager.getAllSubtasksID());
                 ID = scanner.nextInt();
-                Subtask subtask = inMemoryTaskManager.getSubtask(ID);
-                if (subtask == null) return;
+                List<Subtask> subtasks = fileBackedTasksManager.getAllSubTasks();
+                if (subtasks == null) return;
+                Subtask thisSubtask = null;
+                for (Subtask subtask : subtasks) {
+                    if (subtask.getID() == ID) {
+                        thisSubtask = subtask;
+                    }
+                }
                 System.out.println("Введите новый статус: \n1. IN_PROGRESS\n2. DONE");
                 ident = scanner.nextInt();
-                if (ident == 1)  subtask.setStatus(Status.IN_PROGRESS);
-                if (ident == 2)  subtask.setStatus(Status.DONE);
-                inMemoryTaskManager.updateSubtask(subtask);
+                if (ident == 1)  thisSubtask.setStatus(Status.IN_PROGRESS);
+                if (ident == 2)  thisSubtask.setStatus(Status.DONE);
+                fileBackedTasksManager.updateSubtask(thisSubtask);
                 break;
             case 0:
                 return;
             default:
                 System.out.println("Такого выбора нет");
-                update(inMemoryTaskManager);
+                update(fileBackedTasksManager);
         }
     }
 
-    static void getSubtasksOfEpic(InMemoryTaskManager inMemoryTaskManager) {
-        System.out.println("Введите ID эпика. Все ID эпиков: " + inMemoryTaskManager.getAllEpicsID());
+    static void getSubtasksOfEpic(FileBackedTasksManager fileBackedTasksManager) {
+        System.out.println("Введите ID эпика. Все ID эпиков: " + fileBackedTasksManager.getAllEpicsID());
         int ID = scanner.nextInt();
-        ArrayList<Subtask> subtasksOfEpic = inMemoryTaskManager.getAllSubtasksOfEpic(ID);
+        ArrayList<Subtask> subtasksOfEpic = fileBackedTasksManager.getAllSubtasksOfEpic(ID);
         if (subtasksOfEpic == null) return;
         for (Subtask subtask : subtasksOfEpic) {
             System.out.println(subtask);
         }
     }
 
-    static void getHistory(InMemoryTaskManager inMemoryTaskManager) {
-        List<Task> history = inMemoryTaskManager.getHistory();
+    static void getHistory(FileBackedTasksManager fileBackedTasksManager) {
+        List<Task> history = fileBackedTasksManager.getHistory();
         for (Task task : history) {
             System.out.println(task);
         }
+    }
+
+    static FileBackedTasksManager getManagerFromFile(File file) {
+        //данные считываются из testinfo.txt и полученном менеджере записываются в file который передается(info.txt)
+        return FileBackedTasksManager.loadFromFile(new File("testinfo.txt"), file);
     }
 }
