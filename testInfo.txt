@@ -1,0 +1,13 @@
+id,type,name,status,description,duration,startTime,epic
+1,TASK,first task,NEW,description of first task,PT1H,2023-02-15T16:50:10,None
+2,TASK,second task,NEW,description of second task,null,null,None
+8,TASK,zxc,NEW,qwe,null,null,None
+3,EPIC,first epic,NEW,description of first epic,null,null,None
+4,EPIC,second epic,NEW,description of second epic,null,null,None
+9,EPIC,qqq,NEW,eee,null,null,None
+5,SUBTASK,first subtask,NEW,subtask of first epic,null,null,3
+6,SUBTASK,second subtask,NEW,another subtask of first epic,null,null,3
+7,SUBTASK,third subtask,NEW,subtask of second epic,null,null,4
+10,SUBTASK,kekw,NEW,kekl,null,null,9
+
+3,5,1,10

@@ -34,21 +34,23 @@ public interface TaskManager {
     void updateSubtask(Subtask subtask);
 
     //remove task(any type of task) by ID
-    void removeTask(int ID);
+    void removeTask(int id);
 
-    void removeEpic(int ID);
+    void removeEpic(int id);
 
-    void removeSubtask(int ID);
+    void removeSubtask(int id);
 
     //get task by ID
-    Task getTask(int ID);
+    Task getTask(int id);
 
-    Epic getEpic(int ID);
+    Epic getEpic(int id);
 
-    Subtask getSubtask(int ID);
+    Subtask getSubtask(int id);
     //
 
-    ArrayList<Subtask> getAllSubtasksOfEpic(int epicID);
+    ArrayList<Subtask> getAllSubtasksOfEpic(int epicId);
 
     List<Task> getHistory();
+
+    List<Task> getPrioritizedTasks();
 }

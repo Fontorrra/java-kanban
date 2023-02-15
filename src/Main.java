@@ -1,12 +1,10 @@
 import manager.FileBackedTasksManager;
-import manager.InMemoryTaskManager;
 import manager.Managers;
 import task.*;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -21,27 +19,19 @@ public class Main {
         File file = new File("info.txt");
         FileBackedTasksManager fileBackedTasksManager = (FileBackedTasksManager)
                 Managers.getDefaultFile(file);
-        fileBackedTasksManager.createNewTask(new Task(0, "first task", "description of first task"));
+
+        fileBackedTasksManager.createNewTask(new Task(0, "first task", "description of first task",
+                Duration.ofHours(1), LocalDateTime.of(2023, 2, 15, 16, 50, 10)));
         fileBackedTasksManager.createNewTask(new Task(0, "second task", "description of second task"));
         fileBackedTasksManager.createNewEpic(new Epic(0, "first epic", "description of first epic"));
         fileBackedTasksManager.createNewEpic(new Epic(0, "second epic", "description of second epic"));
         ArrayList<Epic> epics = fileBackedTasksManager.getAllEpics();
         fileBackedTasksManager.createNewSubtask(new Subtask(0, "first subtask",
-                        "subtask of first epic", epics.get(0).getID()));
+                        "subtask of first epic", epics.get(0).getId()));
         fileBackedTasksManager.createNewSubtask(new Subtask(0, "second subtask",
-                        "another subtask of first epic", epics.get(0).getID()));
+                        "another subtask of first epic", epics.get(0).getId()));
         fileBackedTasksManager.createNewSubtask(new Subtask(0, "third subtask",
-                        "subtask of second epic", epics.get(1).getID()));
-       /* System.out.println(fileBackedTasksManager.toString
-                (new Task(0, "first task", "description of first task")));
-        System.out.println(fileBackedTasksManager.toString
-                (new Epic(0, "second epic", "description of second epic")));
-        System.out.println(fileBackedTasksManager.toString
-                (new Subtask(0, "first sub task",
-                        "sub task of first epic", epics.get(0).getID())));
-        System.out.println(fileBackedTasksManager.fromString(fileBackedTasksManager.toString
-                (new Subtask(0, "first sub task",
-                        "sub task of first epic", epics.get(0).getID()))))*/
+                        "subtask of second epic", epics.get(1).getId()));
 
         printMenu();
         while (true) {
@@ -136,8 +126,8 @@ public class Main {
                 System.out.println("Введите описание");
                 description = scanner.nextLine();
                 System.out.println("Введите ID эпика. Все ID эпиков: " + fileBackedTasksManager.getAllEpicsID());
-                int epicID = scanner.nextInt();
-                fileBackedTasksManager.createNewSubtask(new Subtask(0, title, description, epicID));
+                int epicId = scanner.nextInt();
+                fileBackedTasksManager.createNewSubtask(new Subtask(0, title, description, epicId));
                 return;
             case 0:
                 return;
@@ -277,7 +267,7 @@ public class Main {
                 if (tasks == null) return;
                 Task thisTask = null;
                 for (Task task : tasks) {
-                    if (task.getID() == ID) {
+                    if (task.getId() == ID) {
                         thisTask = task;
                     }
                 }
@@ -294,7 +284,7 @@ public class Main {
                 if (epics == null) return;
                 Epic thisEpic = null;
                 for (Epic epic : epics) {
-                    if (epic.getID() == ID) {
+                    if (epic.getId() == ID) {
                         thisEpic = epic;
                     }
                 }
@@ -310,7 +300,7 @@ public class Main {
                 if (subtasks == null) return;
                 Subtask thisSubtask = null;
                 for (Subtask subtask : subtasks) {
-                    if (subtask.getID() == ID) {
+                    if (subtask.getId() == ID) {
                         thisSubtask = subtask;
                     }
                 }
@@ -346,7 +336,7 @@ public class Main {
     }
 
     static FileBackedTasksManager getManagerFromFile(File file) {
-        //данные считываются из testinfo.txt и полученном менеджере записываются в file который передается(info.txt)
-        return FileBackedTasksManager.loadFromFile(new File("testinfo.txt"), file);
+        //данные считываются из testInfo.txt и полученном менеджере записываются в file который передается(info.txt)
+        return FileBackedTasksManager.loadFromFile(new File("testInfo.txt"), file);
     }
 }

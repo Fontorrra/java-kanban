@@ -1,20 +1,36 @@
 package task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 public class Task {
-    protected int ID;
+    protected int id;
     protected String title;
     protected String description;
     protected Status status;
-    protected final TaskType taskType;
+    protected TaskType taskType;
+    protected Duration duration;
+    protected LocalDateTime startTime;
 
-    public Task(int ID, String title, String description) {
-        this.ID = ID;
+    public Task(int id, String title, String description) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.status = Status.NEW;
         taskType = TaskType.TASK;
+        this.duration = null;
+        this.startTime = null;
+    }
+
+    public Task(int id, String title, String description, Duration duration, LocalDateTime startTime) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.status = Status.NEW;
+        taskType = TaskType.TASK;
+        this.duration = duration;
+        this.startTime = startTime;
     }
 
     public String getTitle() {
@@ -25,16 +41,29 @@ public class Task {
         return description;
     }
 
-    public int getID() {
-        return ID;
+    public int getId() {
+        return id;
+    }
+
+    public LocalDateTime getEndTime() {
+        if (startTime == null || duration == null) return null;
+        return startTime.plus(duration);
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public Duration getDuration() {
+        return duration;
     }
 
     public TaskType getTaskType() {
         return taskType;
     }
 
-    public void setID(int ID) {
-        this.ID = ID;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Status getStatus() {
@@ -50,21 +79,28 @@ public class Task {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return ID == task.ID && Objects.equals(title, task.title) && Objects.equals(description, task.description) && status == task.status;
+        return id == task.id &&
+                Objects.equals(title, task.title) &&
+                Objects.equals(description, task.description) &&
+                status == task.status &&
+                Objects.equals(duration, task.duration) &&
+                Objects.equals(startTime, task.startTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, description, ID, status);
+        return Objects.hash(title, description, id, status, duration, startTime);
     }
 
     @Override
     public String toString() {
         return "Task{" +
-                "ID=" + ID +
+                "ID=" + id +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", status=" + status +
+                ", duration=" + duration +
+                ", startTime=" + startTime +
                 '}';
     }
 }
