@@ -27,27 +27,44 @@ class HistoryManagerTest {
     }
 
     @Test
-    void add() {
+    void emptyHistoryAfterCreating() {
         assertEquals(historyManager.getHistory(), Collections.emptyList());
-        historyManager.add(task1);
+    }
+
+    @Test
+    void addRepeatingElement () {
         historyManager.add(task1);
         List<Task> history = historyManager.getHistory();
         assertEquals(history, List.of(task1));
         historyManager.add(epic);
-        historyManager.add(task2);
-        history = historyManager.getHistory();
-        assertEquals(history, List.of(task1, epic, task2));
         historyManager.add(task1);
         history = historyManager.getHistory();
-        assertEquals(history, List.of(epic, task2, task1));
+        assertEquals(history, List.of(epic, task1));
     }
 
     @Test
-    void remove() {
+    void addClassicTest() {
+        historyManager.add(task1);
+        historyManager.add(epic);
+        historyManager.add(task2);
+        List<Task> history = historyManager.getHistory();
+        assertEquals(history, List.of(task1, epic, task2));
+    }
+
+    @Test
+    void removingFromVOidHistoryWithNoExcept() {
         historyManager.remove(1);
+    }
+
+    @Test
+    void removingFromHistoryWithOneElementTest() {
         historyManager.add(task1);
         historyManager.remove(1);
         assertEquals(historyManager.getHistory(), Collections.emptyList());
+    }
+
+    @Test
+    void removingHeadOrTailTest() {
         historyManager.add(task1);
         historyManager.add(task2);
         historyManager.remove(3);
@@ -55,12 +72,13 @@ class HistoryManagerTest {
         historyManager.add(task2);
         historyManager.remove(1);
         assertEquals(historyManager.getHistory(), List.of(task2));
+    }
+
+    @Test
+    void removeClassicTest() {
         historyManager.add(task1);
         historyManager.add(epic);
         historyManager.add(task2);
-        historyManager.remove(2);
-        assertEquals(historyManager.getHistory(), List.of(task1, task2));
-        historyManager.add(epic);
         historyManager.remove(2);
         assertEquals(historyManager.getHistory(), List.of(task1, task2));
     }

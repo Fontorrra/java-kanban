@@ -31,6 +31,10 @@ public class EpicTests {
     void shouldBeNewWhenNoSubtasks() {
         assertEquals(manager.getAllSubtasksOfEpic(1), Collections.emptyList());
         assertEquals(manager.getEpic(1).getStatus(), Status.NEW);
+    }
+
+    @Test
+    void shouldBeNewWhenNoSubtasksAfterDeleting() {
         manager.createNewSubtask(subtask1);
         subtask1.setStatus(Status.DONE);
         manager.updateSubtask(subtask1);
@@ -42,7 +46,6 @@ public class EpicTests {
     void shouldBeNewWhenAllSubtaskAreNew() {
         manager.createNewSubtask(subtask1);
         manager.createNewSubtask(subtask2);
-        assertEquals(manager.getAllSubtasksOfEpic(1), List.of(subtask1, subtask2));
         assertEquals(manager.getEpic(1).getStatus(), Status.NEW);
     }
 

@@ -18,19 +18,8 @@ public class InMemoryTaskManager implements TaskManager {
         subtasks = new HashMap<>();
         epics = new HashMap<>();
         historyManager = Managers.getDefaultHistory();
-        tasksAndSubtasks = new TreeSet<>(new Comparator<Task>() {
-            @Override
-            public int compare(Task o1, Task o2) {
-                if (o1.equals(o2)) return 0;
-                if ((o1.getStartTime() == null || o1.getDuration() == null) &&
-                        (o2.getStartTime() == null || o2.getDuration() == null)) return o1.getId() - o2.getId();
-                if (o1.getStartTime() == null || o1.getDuration() == null) return 1;
-                if (o2.getStartTime() == null || o2.getDuration() == null) return -1;
-                if (o1.getStartTime().isBefore(o2.getStartTime())) return -1;
-                if (o1.getStartTime().isAfter(o2.getStartTime())) return 1;
-                return 0;
-            }
-        });
+        tasksAndSubtasks = new TreeSet<>(Comparator.comparing(Task::getStartTime,
+                Comparator.nullsLast(Comparator.naturalOrder())).thenComparing(Task::getId));
     }
 
     //creating tasks
@@ -268,12 +257,11 @@ public class InMemoryTaskManager implements TaskManager {
     private boolean isValid(Task validTask) {
         if (validTask.getStartTime() == null || validTask.getDuration() == null) return true;
         for (Task task : tasksAndSubtasks) {
-            if (task.getStartTime() != null && task.getDuration() != null) {
-                if (task.getStartTime().isBefore(validTask.getEndTime()) &&
-                        task.getEndTime().isAfter(validTask.getEndTime())) return false;
-                if (task.getStartTime().isBefore(validTask.getStartTime()) &&
-                        task.getEndTime().isAfter(validTask.getStartTime())) return false;
-            }
+            if (task.getStartTime() == null || task.getDuration() == null) continue;
+            if (task.getStartTime().isBefore(validTask.getEndTime()) &&
+                    task.getEndTime().isAfter(validTask.getEndTime())) return false;
+            if (task.getStartTime().isBefore(validTask.getStartTime()) &&
+                    task.getEndTime().isAfter(validTask.getStartTime())) return false;
         }
         return true;
     }

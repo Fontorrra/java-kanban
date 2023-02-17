@@ -62,7 +62,15 @@ public class Epic extends Task {
     public void removeSubtaskInEpic(Subtask subtask) {
         subtasks.remove(subtask.getId(), subtask);
         updateStatus();
+        if (subtasks.size() == 0) {
+            startTime = null;
+            endTime = null;
+            duration = null;
+            return;
+        }
+
         if (subtask.getEndTime() == null || endTime == null) return;
+
         duration = duration.minus(subtask.duration);
         if (subtask.startTime.equals(startTime)) {
             LocalDateTime minStartTime = endTime;
@@ -71,6 +79,13 @@ public class Epic extends Task {
                     minStartTime = subtask1.startTime;
                 }
             }
+
+            if (minStartTime.equals(endTime)) {
+                startTime = null;
+                endTime = null;
+                duration = null;
+                return;
+            }
             startTime = minStartTime;
         }
 
@@ -78,8 +93,14 @@ public class Epic extends Task {
             LocalDateTime maxEndTime = startTime;
             for (Subtask subtask1 : subtasks.values()) {
                 if (subtask1.getEndTime().isAfter(maxEndTime)) {
-                    maxEndTime = subtask1.startTime;
+                    maxEndTime = subtask1.getEndTime();
                 }
+            }
+            if (maxEndTime.equals(startTime)) {
+                startTime = null;
+                endTime = null;
+                duration = null;
+                return;
             }
             endTime = maxEndTime;
         }
