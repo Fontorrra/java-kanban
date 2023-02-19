@@ -1,4 +1,6 @@
-package manager;
+package manager.file;
+import manager.history.HistoryManager;
+import manager.memory.InMemoryTaskManager;
 import task.*;
 
 import java.io.*;
@@ -15,7 +17,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         this.file = file;
     }
 
-    private void save() {
+    public FileBackedTasksManager() {
+    }
+
+    protected void save() {
+        if (file == null) return;
         try (BufferedWriter writer =new BufferedWriter(new FileWriter(file.getName()))) {
             writer.write("id,type,name,status,description,duration,startTime,epic");
             writer.newLine();
@@ -40,39 +46,45 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void createNewTask(Task task) {
-        super.createNewTask(task);
+    public Task createNewTask(Task task) {
+        Task newTask = super.createNewTask(task);
         save();
+        return newTask;
     }
 
     @Override
-    public void createNewEpic(Epic epic) {
-        super.createNewEpic(epic);
+    public Epic createNewEpic(Epic epic) {
+        Epic newEpic = super.createNewEpic(epic);
         save();
+        return newEpic;
     }
 
     @Override
-    public void createNewSubtask(Subtask subtask) {
-        super.createNewSubtask(subtask);
+    public Subtask createNewSubtask(Subtask subtask) {
+        Subtask newSubtask = super.createNewSubtask(subtask);
         save();
+        return newSubtask;
     }
 
     @Override
-    public void removeTask(int id) {
-        super.removeTask(id);
-        save();
+    public boolean removeTask(int id) {
+        boolean isDeleted =  super.removeTask(id);
+        if (isDeleted) save();
+        return isDeleted;
     }
 
     @Override
-    public void removeEpic(int id) {
-        super.removeEpic(id);
-        save();
+    public boolean removeEpic(int id) {
+        boolean isDeleted = super.removeEpic(id);
+        if (isDeleted) save();
+        return isDeleted;
     }
 
     @Override
-    public void removeSubtask(int id) {
-        super.removeSubtask(id);
-        save();
+    public boolean removeSubtask(int id) {
+        boolean isDeleted = super.removeSubtask(id);
+        if (isDeleted) save();
+        return isDeleted;
     }
 
     @Override
@@ -94,7 +106,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    void removeAllSubtasksOfEpic(int epicID) {
+    public void removeAllSubtasksOfEpic(int epicID) {
         super.removeAllSubtasksOfEpic(epicID);
         save();
     }
@@ -148,7 +160,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return subtask;
     }
 
-    public static String toString(Task task) {
+    protected static String toString(Task task) {
         TaskType taskType = task.getTaskType();
         String epicID = "None";
         if (task.getTaskType() == TaskType.SUBTASK) epicID = Integer.toString(((Subtask)task).getEpicId());
@@ -164,7 +176,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 );
     }
 
-    public static Task fromString(String value) {
+    protected static Task fromString(String value) {
         String[] values = value.split(",");
         Task task = null;
         TaskType taskType = TaskType.valueOf(values[1]);
@@ -202,7 +214,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     public static FileBackedTasksManager loadFromFile(File fileFrom, File fileForManager) throws LoadFromFileException {
         int maxId = 0;
         FileBackedTasksManager fileBackedTasksManager = new FileBackedTasksManager(fileForManager);
-       try(BufferedReader br = new BufferedReader(new FileReader(fileFrom))) {
+        try(BufferedReader br = new BufferedReader(new FileReader(fileFrom))) {
             br.readLine();
             String line = br.readLine();
             if (line == null) return new FileBackedTasksManager(fileForManager);

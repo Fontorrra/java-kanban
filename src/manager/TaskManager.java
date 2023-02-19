@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface TaskManager {
     //creating tasks
-    void createNewTask(Task task);
+    Task createNewTask(Task task);
 
-    void createNewEpic(Epic epic);
+    Epic createNewEpic(Epic epic);
 
-    void createNewSubtask(Subtask subtask);
+    Subtask createNewSubtask(Subtask subtask);
 
     //getting a list of tasks by type
     ArrayList<Task> getAllTasks();
@@ -34,11 +34,11 @@ public interface TaskManager {
     void updateSubtask(Subtask subtask);
 
     //remove task(any type of task) by ID
-    void removeTask(int id);
+    boolean removeTask(int id);
 
-    void removeEpic(int id);
+    boolean removeEpic(int id);
 
-    void removeSubtask(int id);
+    boolean removeSubtask(int id);
 
     //get task by ID
     Task getTask(int id);

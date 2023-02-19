@@ -1,8 +1,15 @@
-import manager.FileBackedTasksManager;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.sun.net.httpserver.HttpServer;
 import manager.Managers;
+import manager.file.FileBackedTasksManager;
+import manager.http.HttpTaskServer;
+import manager.http.KVTaskClient;
 import task.*;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,7 +21,21 @@ public class Main {
     static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
-        System.out.println("Изачально массив заполнен двумя задачами," +
+
+        Task task = new Task(0, "first task", "description of first task");
+        Epic epic = new Epic(0, "first epic", "description of first epic");
+        Gson gson = Managers.getGson();
+        System.out.println(gson.toJson(task));
+        System.out.println(gson.toJson(epic));
+        Subtask subtask =  new Subtask(0, "first subtask",
+                "subtask of first epic", 2);
+        System.out.println(gson.toJson(subtask));
+       try {
+           HttpTaskServer httpTaskServer = new HttpTaskServer(8078);
+       } catch (IOException | InterruptedException exception) {
+           return;
+       }
+       /* System.out.println("Изачально массив заполнен двумя задачами," +
                 " и двумя эпиками(в две подзадачи в другом одна)");
         File file = new File("info.txt");
         FileBackedTasksManager fileBackedTasksManager = (FileBackedTasksManager)
@@ -77,9 +98,8 @@ public class Main {
                     System.out.println("Такого выбора нет");
                     printMenu();
             }
-        }
+        }*/
     }
-
     static void printMenu() {
         System.out.println("0. Выход");
         System.out.println("1. Добавить новую задачу/эпик/подзадачу");

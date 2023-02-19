@@ -1,4 +1,4 @@
-package manager;
+package manager.history;
 
 import node.Node;
 import task.Task;
@@ -13,7 +13,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     Node<Task> head;
     Node<Task> tail;
 
-    InMemoryHistoryManager() {
+    public InMemoryHistoryManager() {
         mapOfNodes = new HashMap<>();
     }
 
