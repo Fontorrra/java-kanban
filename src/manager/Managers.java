@@ -8,17 +8,15 @@ import manager.file.FileBackedTasksManager;
 import manager.history.HistoryManager;
 import manager.history.InMemoryHistoryManager;
 import manager.http.HttpTaskManager;
-import manager.memory.InMemoryTaskManager;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class Managers {
 
-    public static TaskManager getDefault(int port) throws IOException, InterruptedException{
+    public static TaskManager getDefault(int port) {
         return new HttpTaskManager(port);
     }
 

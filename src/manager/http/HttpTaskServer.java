@@ -1,68 +1,67 @@
 package manager.http;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import manager.Managers;
 import manager.TaskManager;
 import task.*;
 
-import javax.swing.text.NumberFormatter;
-import javax.swing.text.html.Option;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 
 public class HttpTaskServer {
-    private static final int PORT = 8080;
     private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+    private final int port;
     HttpServer httpServer;
     TaskManager manager;
     private final Gson gson = Managers.getGson();
 
-    public HttpTaskServer(int port) throws IOException, InterruptedException {
-        httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
-        httpServer.createContext("/tasks/task", this::task);
-        httpServer.createContext("/tasks/subtask", this::subtask);
-        httpServer.createContext("/tasks/epic", this::epic);
-        httpServer.createContext("/tasks", this::tasks);
-        httpServer.start();
-        manager = Managers.getDefault(port);
+    public HttpTaskServer(int portForKVClient, int portForHttpServer) {
+        try {
+            port = portForHttpServer;
+            httpServer = HttpServer.create(new InetSocketAddress(port), 0);
+            httpServer.createContext("/tasks/task", this::task);
+            httpServer.createContext("/tasks/subtask", this::subtask);
+            httpServer.createContext("/tasks/epic", this::epic);
+            httpServer.createContext("/tasks", this::tasks);
+            httpServer.start();
+            manager = Managers.getDefault(portForKVClient);
+        }
+        catch (IOException exception) {
+            throw new HttpTaskServerException();
+        }
     }
 
     public void stop() {
         httpServer.stop(0);
     }
 
-    private void tasks(HttpExchange exchange) throws IOException {
+    private void tasks(HttpExchange exchange) {
 
-       Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(),
-                exchange.getRequestMethod(),
-                exchange.getRequestURI().getQuery());
+       Endpoint endpoint = Endpoint.getEndpoint(exchange);
 
        switch (endpoint) {
            case GET_HISTORY:
-               writeResponse(exchange, gson.toJson(manager.getHistory()), 200);
+               writeResponse(exchange, gson.toJson(manager.getHistory()), HttpURLConnection.HTTP_OK);
                break;
 
            case GET_PRIORITIZED_TASKS:
-               writeResponse(exchange, gson.toJson(manager.getPrioritizedTasks()), 200);
+               writeResponse(exchange, gson.toJson(manager.getPrioritizedTasks()), HttpURLConnection.HTTP_OK);
                break;
            default:
-               writeResponse(exchange, "Некорректный запрос", 404);
+               writeResponse(exchange, "Некорректный запрос", HttpURLConnection.HTTP_NOT_FOUND);
        }
     }
 
-    private void task(HttpExchange exchange) throws IOException {
-        Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(),
-                exchange.getRequestMethod(),
-                exchange.getRequestURI().getQuery());
+    private void task(HttpExchange exchange) {
+        Endpoint endpoint = Endpoint.getEndpoint(exchange);
 
         int taskId = 0;
 
@@ -70,71 +69,76 @@ public class HttpTaskServer {
             endpoint.equals(Endpoint.GET_TASK)) {
             Optional<Integer> taskIdOpt = getId(exchange);
             if (taskIdOpt.isEmpty()) {
-                writeResponse(exchange, "Некорректный идентификатор задачи", 400);
+                writeResponse(exchange, "Некорректный идентификатор задачи",
+                              HttpURLConnection.HTTP_BAD_REQUEST);
                 return;
             }
             taskId = taskIdOpt.get();
         }
 
         switch (endpoint) {
-
             case GET_TASK:
                 Task task = manager.getTask(taskId);
                 if (task == null) {
-                    writeResponse(exchange, "Задача с идентификатором " + taskId + " не найдена", 404);
+                    writeResponse(exchange, "Задача с идентификатором " + taskId + " не найдена",
+                                  HttpURLConnection.HTTP_NOT_FOUND);
                     break;
                 }
-                writeResponse(exchange, gson.toJson(task), 200);
+                writeResponse(exchange, gson.toJson(task), HttpURLConnection.HTTP_OK);
                 break;
 
             case DELETE_TASK:
                 boolean isDeleted = manager.removeTask(taskId);
-                if (isDeleted) writeResponse(exchange, "Задача успешно удалена", 200);
-                else writeResponse(exchange, "Задача с идентификатором " + taskId + " не найдена", 404);
+                if (isDeleted) writeResponse(exchange, "Задача успешно удалена", HttpURLConnection.HTTP_OK);
+                else writeResponse(exchange, "Задача с идентификатором " + taskId + " не найдена",
+                                   HttpURLConnection.HTTP_NOT_FOUND);
                 break;
 
             case POST_TASK:
-                Task newTask = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Task.class);
+                Task newTask;
+                try {
+                    newTask = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Task.class);
+                } catch (IOException e) {
+                    throw new HttpTaskServerException();
+                }
                 task = manager.getTask(newTask.getId());
 
                 if (!newTask.getTaskType().equals(TaskType.TASK)) {
-                    writeResponse(exchange, "Некорректный запрос", 400);
+                    writeResponse(exchange, "Некорректный запрос", HttpURLConnection.HTTP_BAD_REQUEST);
                     break;
                 }
 
                 if (task == null) {
                     manager.createNewTask(newTask);
-                    writeResponse(exchange, "Задача успешно создана", 200);
+                    writeResponse(exchange, "Задача успешно создана", HttpURLConnection.HTTP_CREATED);
                     break;
                 }
 
                 else {
                     manager.updateTask(newTask);
-                    writeResponse(exchange, "Задача успешно обновлена", 200);
+                    writeResponse(exchange, "Задача успешно обновлена", HttpURLConnection.HTTP_CREATED);
                 }
                 break;
 
             case GET_TASKS:
                 List<Task> tasks = manager.getAllTasks();
-                writeResponse(exchange, gson.toJson(tasks), 200);
+                writeResponse(exchange, gson.toJson(tasks), HttpURLConnection.HTTP_OK);
                 break;
 
             case DELETE_ALL_TASKS:
                 manager.removeAllTasks();
-                writeResponse(exchange, "Задачи успешно удалены", 200);
+                writeResponse(exchange, "Задачи успешно удалены", HttpURLConnection.HTTP_OK);
                 break;
 
             default:
-                writeResponse(exchange, "Некорректный запрос", 400);
+                writeResponse(exchange, "Некорректный запрос", HttpURLConnection.HTTP_NOT_FOUND);
                 break;
         }
 
     }
 
-    private void subtask(HttpExchange exchange) throws IOException {
-        Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(),
-                exchange.getRequestMethod(),
-                exchange.getRequestURI().getQuery());
+    private void subtask(HttpExchange exchange) {
+        Endpoint endpoint = Endpoint.getEndpoint(exchange);
 
         int subtaskId = 0;
 
@@ -143,7 +147,8 @@ public class HttpTaskServer {
             endpoint.equals(Endpoint.GET_EPIC_SUBTASKS)) {
             Optional<Integer> subtaskIdOpt = getId(exchange);
             if (subtaskIdOpt.isEmpty()) {
-                writeResponse(exchange, "Некорректный идентификатор подзадачи", 400);
+                writeResponse(exchange, "Некорректный идентификатор подзадачи",
+                              HttpURLConnection.HTTP_BAD_REQUEST);
                 return;
             }
             subtaskId = subtaskIdOpt.get();
@@ -153,60 +158,65 @@ public class HttpTaskServer {
             case GET_SUBTASK:
                 Subtask subtask = manager.getSubtask(subtaskId);
                 if (subtask == null) {
-                    writeResponse(exchange, "Подзадача с идентификатором " + subtaskId + " не найдена", 404);
+                    writeResponse(exchange, "Подзадача с идентификатором " + subtaskId + " не найдена",
+                                  HttpURLConnection.HTTP_NOT_FOUND);
                     break;
                 }
-                writeResponse(exchange, gson.toJson(subtask), 200);
+                writeResponse(exchange, gson.toJson(subtask), HttpURLConnection.HTTP_OK);
                 break;
             case DELETE_SUBTASK:
                 boolean isDeleted = manager.removeSubtask(subtaskId);
-                if (isDeleted) writeResponse(exchange, "Подадача успешно удалена", 200);
-                else writeResponse(exchange, "Подзадача с идентификатором " + subtaskId + " не найдена", 404);
+                if (isDeleted) writeResponse(exchange, "Подадача успешно удалена", HttpURLConnection.HTTP_OK);
+                else writeResponse(exchange, "Подзадача с идентификатором " + subtaskId + " не найдена",
+                                   HttpURLConnection.HTTP_NOT_FOUND);
                 break;
 
             case POST_SUBTASK:
-                Subtask newSubtask = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Subtask.class);
-
+                Subtask newSubtask;
+                try {
+                    newSubtask = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()),
+                                                       Subtask.class);
+                } catch (IOException exception) {
+                    throw new HttpTaskServerException();
+                }
                 if (!newSubtask.getTaskType().equals(TaskType.SUBTASK)) {
-                    writeResponse(exchange, "Некорректный запрос", 400);
+                    writeResponse(exchange, "Некорректный запрос", HttpURLConnection.HTTP_BAD_REQUEST);
                     break;
                 }
                 subtask = manager.getSubtask(newSubtask.getId());
                 if (subtask == null) {
                     manager.createNewSubtask(newSubtask);
-                    writeResponse(exchange, "Подзадача успешно создана", 200);
+                    writeResponse(exchange, "Подзадача успешно создана", HttpURLConnection.HTTP_CREATED);
                     break;
                 }
                 else {
                     manager.updateSubtask(newSubtask);
-                    writeResponse(exchange, "Подзадача успешно обновлена", 200);
+                    writeResponse(exchange, "Подзадача успешно обновлена", HttpURLConnection.HTTP_CREATED);
                 }
                 break;
 
             case GET_SUBTASKS:
                 List<Subtask> subtasks = manager.getAllSubTasks();
-                writeResponse(exchange, gson.toJson(subtasks), 200);
+                writeResponse(exchange, gson.toJson(subtasks), HttpURLConnection.HTTP_OK);
                 break;
 
             case DELETE_ALL_SUBTASKS:
                 manager.removeAllSubtasks();
-                writeResponse(exchange, "Подзадачи успешно удалены", 200);
+                writeResponse(exchange, "Подзадачи успешно удалены", HttpURLConnection.HTTP_OK);
                 break;
 
             case GET_EPIC_SUBTASKS:
                 subtasks = manager.getAllSubtasksOfEpic(subtaskId);
-                writeResponse(exchange, gson.toJson(subtasks), 200);
+                writeResponse(exchange, gson.toJson(subtasks), HttpURLConnection.HTTP_OK);
                 break;
             default:
-                writeResponse(exchange, "Некорректный запрос", 404);
+                writeResponse(exchange, "Некорректный запрос", HttpURLConnection.HTTP_NOT_FOUND);
                 break;
     }
 }
 
-    private void epic(HttpExchange exchange) throws IOException {
-        Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(),
-                exchange.getRequestMethod(),
-                exchange.getRequestURI().getQuery());
+    private void epic(HttpExchange exchange) {
+        Endpoint endpoint = Endpoint.getEndpoint(exchange);
 
         int epicId = 0;
 
@@ -214,7 +224,8 @@ public class HttpTaskServer {
                 endpoint.equals(Endpoint.GET_EPIC)) {
             Optional<Integer> epicIdOpt = getId(exchange);
             if (epicIdOpt.isEmpty()) {
-                writeResponse(exchange, "Некорректный идентификатор эпика", 400);
+                writeResponse(exchange, "Некорректный идентификатор эпика",
+                              HttpURLConnection.HTTP_BAD_REQUEST);
                 return;
             }
             epicId = epicIdOpt.get();
@@ -224,47 +235,54 @@ public class HttpTaskServer {
             case GET_EPIC:
                 Epic epic = manager.getEpic(epicId);
                 if (epic == null) {
-                    writeResponse(exchange, "Эпик с идентификатором " + epicId + " не найден", 404);
+                    writeResponse(exchange, "Эпик с идентификатором " + epicId + " не найден",
+                                  HttpURLConnection.HTTP_NOT_FOUND);
                     break;
                 }
-                writeResponse(exchange, gson.toJson(epic), 200);
+                writeResponse(exchange, gson.toJson(epic), HttpURLConnection.HTTP_OK);
                 break;
             case DELETE_EPIC:
                 boolean isDeleted = manager.removeEpic(epicId);
-                if (isDeleted) writeResponse(exchange, "Эпик успешно удален", 200);
-                else writeResponse(exchange, "Эпик с идентификатором " + epicId + " не найден", 404);
+                if (isDeleted) writeResponse(exchange, "Эпик успешно удален", HttpURLConnection.HTTP_OK);
+                else writeResponse(exchange, "Эпик с идентификатором " + epicId + " не найден",
+                                   HttpURLConnection.HTTP_NOT_FOUND);
                 break;
 
             case POST_EPIC:
-                Epic newEpic = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Epic.class);
+                Epic newEpic;
+                try {
+                    newEpic = gson.fromJson(new String(exchange.getRequestBody().readAllBytes()), Epic.class);
+                } catch (IOException exception) {
+                    throw new HttpTaskServerException();
+                }
                 if (!newEpic.getTaskType().equals(TaskType.EPIC)) {
-                    writeResponse(exchange, "Некорректный запрос", 400);
+                    writeResponse(exchange, "Некорректный запрос", HttpURLConnection.HTTP_BAD_REQUEST);
                     break;
                 }
                 epic = manager.getEpic(newEpic.getId());
                 if (epic == null) {
                     manager.createNewEpic(newEpic);
-                    writeResponse(exchange, "Эпик успешно создан", 200);
+                    writeResponse(exchange, "Эпик успешно создан", HttpURLConnection.HTTP_CREATED);
                     break;
                 }
                 else {
                     manager.updateEpic(newEpic);
-                    writeResponse(exchange, "Эпик успешно обновлен", 200);
+                    writeResponse(exchange, "Эпик успешно обновлен", HttpURLConnection.HTTP_CREATED);
                 }
                 break;
 
             case GET_EPICS:
                 List<Epic> epics = manager.getAllEpics();
-                writeResponse(exchange, gson.toJson(epics), 200);
+                writeResponse(exchange, gson.toJson(epics), HttpURLConnection.HTTP_OK);
                 break;
 
             case DELETE_ALL_EPICS:
                 manager.removeAllEpics();
-                writeResponse(exchange, "Эпики успешно удалены", 200);
+                writeResponse(exchange, "Эпики успешно удалены", HttpURLConnection.HTTP_OK);
                 break;
 
             default:
-                writeResponse(exchange, "Некорректный запрос", 404);
+                writeResponse(exchange, "Некорректный запрос", HttpURLConnection.HTTP_NOT_FOUND);
                 break;
         }
     }
@@ -280,110 +298,20 @@ public class HttpTaskServer {
         }
     }
 
-    private void writeResponse(HttpExchange exchange, String responseString, int responseCode) throws IOException {
-        if (responseString.isBlank()) {
-            exchange.sendResponseHeaders(responseCode, 0);
-        }
-        else {
-            byte[] bytes = responseString.getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(responseCode, bytes.length);
-            try (OutputStream os = exchange.getResponseBody()) {
-                os.write(bytes);
+    private void writeResponse(HttpExchange exchange, String responseString, int responseCode) {
+        try {
+            if (responseString.isBlank()) {
+                exchange.sendResponseHeaders(responseCode, 0);
+            } else {
+                byte[] bytes = responseString.getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(responseCode, bytes.length);
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(bytes);
+                }
             }
+        } catch (IOException exception) {
+            throw new HttpTaskServerException();
         }
-    }
-
-    private Endpoint getEndpoint(String requestPath, String requestMethod, String query) {
-
-        String[] pathSplitted = requestPath.split("/");
-
-        int length = pathSplitted.length;
-        if (pathSplitted[length - 1].isBlank()) length--;
-        if (length == 1) {
-            return Endpoint.UNKNOWN;
-        }
-
-        else if (length == 2) {
-            if (pathSplitted[1].equals("tasks") && requestMethod.equals("GET")) return Endpoint.GET_PRIORITIZED_TASKS;
-        }
-
-        else {
-            String taskType = pathSplitted[2];
-            switch (taskType) {
-                case "task":
-                    if (length == 3 && query == null) {
-                        if (requestMethod.equals("GET")) return Endpoint.GET_TASKS;
-                        if (requestMethod.equals("DELETE")) return Endpoint.DELETE_ALL_TASKS;
-                        if (requestMethod.equals("POST")) return Endpoint.POST_TASK;
-                    }
-                    if (length == 3 && query != null) {
-                        if (query.startsWith("id=")) {
-                            if (requestMethod.equals("GET")) return Endpoint.GET_TASK;
-                            if (requestMethod.equals("DELETE")) return Endpoint.DELETE_TASK;
-                        }
-                    }
-                    return Endpoint.UNKNOWN;
-                case "subtask":
-                    if (length == 3 && query == null) {
-                        if (requestMethod.equals("GET")) return Endpoint.GET_SUBTASKS;
-                        if (requestMethod.equals("DELETE")) return Endpoint.DELETE_ALL_SUBTASKS;
-                        if (requestMethod.equals("POST")) return Endpoint.POST_SUBTASK;
-                    }
-                    if (length == 3 && query != null) {
-                        if (query.startsWith("id=")) {
-                            if (requestMethod.equals("GET")) return Endpoint.GET_SUBTASK;
-                            if (requestMethod.equals("DELETE")) return Endpoint.DELETE_SUBTASK;
-                        }
-                    }
-
-                    if (length == 4 && requestMethod.equals("GET") && query != null) {
-                        if (pathSplitted[3].equals("epic") &&
-                            query.startsWith("id=")) return Endpoint.GET_EPIC_SUBTASKS;
-                    }
-                    return Endpoint.UNKNOWN;
-                case "epic":
-                    if (length == 3 && query == null) {
-                        if (requestMethod.equals("GET")) return Endpoint.GET_EPICS;
-                        if (requestMethod.equals("DELETE")) return Endpoint.DELETE_ALL_EPICS;
-                        if (requestMethod.equals("POST")) return Endpoint.POST_EPIC;
-                    }
-                    if (length == 3 && query != null) {
-                        if (query.startsWith("id=")) {
-                            if (requestMethod.equals("GET")) return Endpoint.GET_EPIC;
-                            if (requestMethod.equals("DELETE")) return Endpoint.DELETE_EPIC;
-                        }
-                    }
-                    return Endpoint.UNKNOWN;
-                case "history":
-                    if (requestMethod.equals("GET")) return Endpoint.GET_HISTORY;
-                    return Endpoint.UNKNOWN;
-                default:
-                    return Endpoint.UNKNOWN;
-            }
-        }
-        return Endpoint.UNKNOWN;
-    }
-
-    enum Endpoint {
-        GET_TASKS,
-        GET_EPICS,
-        GET_SUBTASKS,
-        GET_TASK,
-        GET_SUBTASK,
-        GET_EPIC,
-        POST_TASK,
-        POST_EPIC,
-        POST_SUBTASK,
-        DELETE_TASK,
-        DELETE_SUBTASK,
-        DELETE_EPIC,
-        DELETE_ALL_TASKS,
-        DELETE_ALL_SUBTASKS,
-        DELETE_ALL_EPICS,
-        GET_EPIC_SUBTASKS,
-        GET_HISTORY,
-        GET_PRIORITIZED_TASKS,
-        UNKNOWN
     }
 
 }

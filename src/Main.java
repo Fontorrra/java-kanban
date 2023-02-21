@@ -30,11 +30,10 @@ public class Main {
         Subtask subtask =  new Subtask(0, "first subtask",
                 "subtask of first epic", 2);
         System.out.println(gson.toJson(subtask));
-       try {
-           HttpTaskServer httpTaskServer = new HttpTaskServer(8078);
-       } catch (IOException | InterruptedException exception) {
+       //try {
+          // HttpTaskServer httpTaskServer = new HttpTaskServer(8078, port);
+       //} catch (IOException | InterruptedException exception) {
            return;
-       }
        /* System.out.println("Изачально массив заполнен двумя задачами," +
                 " и двумя эпиками(в две подзадачи в другом одна)");
         File file = new File("info.txt");

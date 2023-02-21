@@ -14,17 +14,22 @@ import com.sun.net.httpserver.HttpServer;
  * Постман: https://www.getpostman.com/collections/a83b61d9e1c81c10575c
  */
 public class KVServer {
-    public static final int PORT = 8078;
+    private final int port;
     private final String apiToken;
     private final HttpServer server;
     private final Map<String, String> data = new HashMap<>();
 
-    public KVServer() throws IOException {
-        apiToken = generateApiToken();
-        server = HttpServer.create(new InetSocketAddress("localhost", PORT), 0);
-        server.createContext("/register", this::register);
-        server.createContext("/save", this::save);
-        server.createContext("/load", this::load);
+    public KVServer(int port) {
+        try {
+            this.port = port;
+            apiToken = generateApiToken();
+            server = HttpServer.create(new InetSocketAddress("localhost", port), 0);
+            server.createContext("/register", this::register);
+            server.createContext("/save", this::save);
+            server.createContext("/load", this::load);
+        } catch (IOException e) {
+            throw new KVServerException();
+        }
     }
 
     private void load(HttpExchange h) throws IOException {

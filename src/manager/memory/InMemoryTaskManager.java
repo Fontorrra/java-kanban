@@ -284,10 +284,6 @@ public class InMemoryTaskManager implements TaskManager {
         return taskList;
     }
 
-    public Epic getEpicWithoutUpdatingHistory(int epicId) {
-        return epics.get(epicId);
-    }
-
     public int size() {
         return tasks.size() + epics.size() + subtasks.size();
     }
